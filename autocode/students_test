@@ -20,12 +20,32 @@ func init() {
 
 // WRITE YOUR CODE BELOW
 
-var p1 = Person{"Nastya1", "Volkovytskaya1", time.Date(2019, 11, 17, 20, 34, 58, 651387237, time.UTC)}
-var p2 = Person{"Nastya2", "Volkovytskaya2", time.Date(2010, 11, 17, 20, 34, 58, 651387237, time.UTC)}
-var p = People{p1, p2}
+var testsForPeople = []struct {
+	p    People
+	want bool
+}{
+	{
+		p: People{
+			Person{"Nastya1", "Volkovytskaya1", time.Date(2019, 11, 17, 20, 34, 58, 651387237, time.UTC)},
+			Person{"Nastya1", "Volkovytskaya3", time.Date(2019, 11, 17, 20, 34, 58, 651387237, time.UTC)}},
+		want: true,
+	},
+	{
+		p: People{
+			Person{"Nastya2", "Volkovytskaya2", time.Date(2010, 11, 17, 20, 34, 58, 651387237, time.UTC)},
+			Person{"Nastya3", "Volkovytskaya2", time.Date(2010, 11, 17, 20, 34, 58, 651387237, time.UTC)}},
+		want: true,
+	},
+	{
+		p: People{
+			Person{"Nastya3", "Volkovytskaya2", time.Date(2010, 11, 17, 20, 34, 58, 651387237, time.UTC)},
+			Person{"Nastya1", "Volkovytskaya3", time.Date(2019, 11, 17, 20, 34, 58, 651387237, time.UTC)}},
+		want: false,
+	},
+}
 
 func TestLen(t *testing.T) {
-	got := p.Len()
+	got := testsForPeople[0].p.Len()
 	want := 2
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
@@ -34,18 +54,19 @@ func TestLen(t *testing.T) {
 }
 
 func TestLess(t *testing.T) {
-	got := p.Less(0, 1)
-	want := true
-	if got != want {
-		t.Errorf("got %t, wanted %t", got, want)
+	for i := 0; i < len(testsForPeople); i++ {
+		got := testsForPeople[i].p.Less(0, 1)
+		if got != testsForPeople[i].want {
+			t.Errorf("got %t, wanted %t", got, testsForPeople[i].want)
+		}
 	}
 }
 
 func TestSwap(t *testing.T) {
-	a := p[0]
-	b := p[1]
-	p.Swap(0, 1)
-	if a != p[1] || b != p[0] {
+	a := testsForPeople[0].p[0]
+	b := testsForPeople[0].p[1]
+	testsForPeople[0].p.Swap(0, 1)
+	if a != testsForPeople[0].p[1] || b != testsForPeople[0].p[0] {
 		t.Errorf("swapping failed")
 	}
 }
@@ -57,6 +78,7 @@ func TestNew(t *testing.T) {
 		want    Matrix
 		wantErr bool
 	}{
+
 		{
 			name: "valid matrix input",
 			s:    "1 2 3\n3 4 3\n3 2 4",
@@ -67,6 +89,11 @@ func TestNew(t *testing.T) {
 			s:       "1 2 3\n3 4\n3 2 4",
 			wantErr: true,
 		},
+		{
+			name:    "invalid string",
+			s:       "1 2 3😋\n3 😋4\n3 😋2 4",
+			wantErr: true,
+		},
 	}
 	for i := 0; i < len(testsForMatrix); i++ {
 		got, err := New(testsForMatrix[i].s)
@@ -74,7 +101,7 @@ func TestNew(t *testing.T) {
 			if !testsForMatrix[i].wantErr {
 				t.Errorf("got %v, wanted %v", err, testsForMatrix[i].wantErr)
 			}
-			return
+			continue
 		}
 		if got.rows != testsForMatrix[i].want.rows || got.cols != testsForMatrix[i].want.cols || !areSlicesEqual(got.data, testsForMatrix[i].want.data) {
 			t.Errorf("got %q, wanted %q", got, testsForMatrix[i].want)
