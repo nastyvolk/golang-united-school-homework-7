@@ -2,6 +2,8 @@ package coverage
 
 import (
 	"os"
+	"testing"
+	"time"
 )
 
 // DO NOT EDIT THIS FUNCTION
@@ -18,3 +20,134 @@ func init() {
 
 // WRITE YOUR CODE BELOW
 
+var p1 = Person{"Nastya1", "Volkovytskaya1", time.Date(2019, 11, 17, 20, 34, 58, 651387237, time.UTC)}
+var p2 = Person{"Nastya2", "Volkovytskaya2", time.Date(2010, 11, 17, 20, 34, 58, 651387237, time.UTC)}
+var p = People{p1, p2}
+
+func TestLen(t *testing.T) {
+	got := p.Len()
+	want := 2
+	if got != want {
+		t.Errorf("got %q, wanted %q", got, want)
+	}
+
+}
+
+func TestLess(t *testing.T) {
+	got := p.Less(0, 1)
+	want := true
+	if got != want {
+		t.Errorf("got %t, wanted %t", got, want)
+	}
+}
+
+func TestSwap(t *testing.T) {
+	a := p[0]
+	b := p[1]
+	p.Swap(0, 1)
+	if a != p[1] || b != p[0] {
+		t.Errorf("swapping failed")
+	}
+}
+
+func TestNew(t *testing.T) {
+	testsForMatrix := []struct {
+		name    string
+		s       string
+		want    Matrix
+		wantErr bool
+	}{
+		{
+			name: "valid matrix input",
+			s:    "1 2 3\n3 4 3\n3 2 4",
+			want: Matrix{rows: 3, cols: 3, data: []int{1, 2, 3, 3, 4, 3, 3, 2, 4}},
+		},
+		{
+			name:    "invalid matrix input",
+			s:       "1 2 3\n3 4\n3 2 4",
+			wantErr: true,
+		},
+	}
+	for i := 0; i < len(testsForMatrix); i++ {
+		got, err := New(testsForMatrix[i].s)
+		if err != nil {
+			if !testsForMatrix[i].wantErr {
+				t.Errorf("got %v, wanted %v", err, testsForMatrix[i].wantErr)
+			}
+			return
+		}
+		if got.rows != testsForMatrix[i].want.rows || got.cols != testsForMatrix[i].want.cols || !areSlicesEqual(got.data, testsForMatrix[i].want.data) {
+			t.Errorf("got %q, wanted %q", got, testsForMatrix[i].want)
+		}
+	}
+}
+
+func areSlicesEqual(s1 []int, s2 []int) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	for i := 0; i < len(s1); i++ {
+		if s1[i] != s2[i] {
+			return false
+		}
+	}
+	return true
+}
+
+var m = Matrix{rows: 3, cols: 3, data: []int{1, 2, 3, 3, 4, 3, 3, 2, 4}}
+
+func TestRows(t *testing.T) {
+	got := m.Rows()
+	want := [][]int{{1, 2, 3}, {3, 4, 3}, {3, 2, 4}}
+	for i := 0; i < len(got); i++ {
+		for j := 0; j < len(got[i]); j++ {
+			if got[i][j] != want[i][j] {
+				t.Errorf("got %v, wanted %v", got, want)
+			}
+		}
+	}
+}
+
+func TestCols(t *testing.T) {
+	got := m.Cols()
+	want := [][]int{{1, 3, 3}, {2, 4, 2}, {3, 3, 4}}
+	for i := 0; i < len(got); i++ {
+		for j := 0; j < len(got[i]); j++ {
+			if got[i][j] != want[i][j] {
+				t.Errorf("got %v, wanted %v", got, want)
+			}
+		}
+	}
+}
+
+func TestSet(t *testing.T) {
+	testsForSet := []struct {
+		name            string
+		m               Matrix
+		row, col, value int
+		ok              bool
+	}{
+		{
+			name:  "valid set input",
+			m:     Matrix{rows: 3, cols: 3, data: []int{1, 2, 3, 3, 4, 3, 3, 2, 4}},
+			row:   2,
+			col:   1,
+			value: 10,
+			ok:    true,
+		},
+		{
+			name:  "invalid set input",
+			m:     Matrix{rows: 3, cols: 3, data: []int{1, 2, 3, 3, 4, 3, 3, 2, 4}},
+			row:   4,
+			col:   3,
+			value: 10,
+			ok:    false,
+		},
+	}
+	for i := 0; i < len(testsForSet); i++ {
+		got := testsForSet[i].m.Set(testsForSet[i].row, testsForSet[i].col, testsForSet[i].value)
+		if got != testsForSet[i].ok {
+			t.Errorf("got %v, wanted %v", got, testsForSet[i].ok)
+		}
+	}
+}
